@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -1242,11 +1242,11 @@
                     </div>
                     <div>
                         <label style="font-weight: bold; color: #90caf9; display: block; margin-bottom: 5px;">Telegram Channel / Chat ID (id):</label>
-                        <input type="text" id="telegramChatIdInput" class="gate-input" style="width: 100%; font-size: 1rem;" placeholder="معرف القناة مثلاً @YourChannel أو -100...">
+                        <input type="text" id="telegramChatIdInput" class="gate-input" style="width: 100%; font-size: 1rem;" placeholder="معرف القناة مثلاً @profoser2016">
                     </div>
                     <div>
                         <label style="font-weight: bold; color: #90caf9; display: block; margin-bottom: 5px;">Google Apps Script WebApp URL:</label>
-                        <input type="text" id="appsScriptUrlInput" class="gate-input" style="width: 100%; font-size: 1rem;" placeholder="https://script.google.com/macros/s/...">
+                        <input type="text" id="appsScriptUrlInput" class="gate-input" style="width: 100%; font-size: 1rem;" placeholder="https://script.google.com/macros/s/.../exec">
                     </div>
                 </div>
                 <div style="margin-top: 15px; display: flex; gap: 12px;">
@@ -1347,7 +1347,7 @@
         </div>
     </div>
 
-    <!-- الفوتر الأصلي المرفق دون تغيير أو استبدال مع الحفاظ على دوران الـ SVG والألوان الزاهية[span_0](start_span)[span_0](end_span) -->
+    <!-- الفوتر الأصلي المرفق دون تغيير أو استبدال مع الحفاظ على دوران الـ SVG والألوان الزاهية[span_1](start_span)[span_1](end_span) -->
     <div class="footer-wrapper">
         <div class="circle-container">
             <svg viewBox="0 0 500 500" class="rotating-svg">
@@ -1565,6 +1565,10 @@
         let studentFinishedTime = "";
 
         const choiceLetters = ["A", "B", "C", "D"];
+
+        // رابط المزامنة السحابية الأساسي المعتمد والمثبت مباشرة للعمل التلقائي
+        const PRIMARY_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzA0y2oU-Hvgc2UltPCDPYrFvCxUEdYkMtq7elSnlB_UVYiW3-VcFuAsMW58T2mfedw/exec";
+        const PRIMARY_TELEGRAM_ID = "@profoser2016";
 
         // محرك المؤثرات الصوتية الرقمية Web Audio API
         const audioEngine = new (window.AudioContext || window.webkitAudioContext)();
@@ -1848,7 +1852,7 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // حفظ النتيجة في السجل المركزي
+        // حفظ النتيجة في السجل المركزي والمزامنة السحابية الفورية
         function saveStudentResultToStorage(score, isDisqualified) {
             let registry = JSON.parse(localStorage.getItem('qureo_tofas_students') || '[]');
             const record = {
@@ -1866,7 +1870,7 @@
             registry.push(record);
             localStorage.setItem('qureo_tofas_students', JSON.stringify(registry));
 
-            // محاولة المزامنة مع Apps Script إذا كان الرابط متاحاً
+            // المزامنة التلقائية مع Google Apps Script
             syncWithGoogleAppsScript(record);
         }
 
@@ -2071,26 +2075,31 @@
 
         function loadAdminSettings() {
             document.getElementById('telegramTokenInput').value = localStorage.getItem('qureo_tg_tok') || "";
-            document.getElementById('telegramChatIdInput').value = localStorage.getItem('qureo_tg_id') || "";
-            document.getElementById('appsScriptUrlInput').value = localStorage.getItem('qureo_apps_url') || "";
+            document.getElementById('telegramChatIdInput').value = localStorage.getItem('qureo_tg_id') || PRIMARY_TELEGRAM_ID;
+            document.getElementById('appsScriptUrlInput').value = localStorage.getItem('qureo_apps_url') || PRIMARY_APPS_SCRIPT_URL;
         }
 
         function syncWithGoogleAppsScript(record) {
-            const url = localStorage.getItem('qureo_apps_url');
+            const url = localStorage.getItem('qureo_apps_url') || PRIMARY_APPS_SCRIPT_URL;
             if (!url) return;
             try {
+                // إرسال البيانات كـ Simple Request دون CORS Preflight لضمان عمل Apps Script بثبات 100%
                 fetch(url, {
                     method: 'POST',
                     mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(record)
-                }).catch(e => console.log(e));
-            } catch (err) {}
+                }).then(() => {
+                    console.log("تمت المزامنة السحابية بنجاح مع Google Sheets عبر Apps Script");
+                }).catch(e => console.log("تنبيه مزامنة:", e));
+            } catch (err) {
+                console.log("خطأ في المزامنة:", err);
+            }
         }
 
         function dispatchTelegramHonorRoll() {
             const tok = localStorage.getItem('qureo_tg_tok');
-            const id = localStorage.getItem('qureo_tg_id');
+            const id = localStorage.getItem('qureo_tg_id') || PRIMARY_TELEGRAM_ID;
 
             if (!tok || !id) {
                 alert("يرجى إدخال كود Bot Token و Chat ID أولاً في الإعدادات وحفظهما.");
@@ -2238,4 +2247,3 @@
     </script>
 </body>
 </html>
-
